@@ -1491,11 +1491,15 @@ function openSheet(html, kind, tickFn){
   sheetOpen = true; sheetKind = kind; sheetTick = tickFn || null;
   setTimeout(() => { const f = sheet.querySelector("button.seg-on, input:not([type=range]), button:not([disabled])"); f && f.focus({preventScroll: true}); }, 200);
 }
-function closeSheet(){
+/* Closing returns focus to whatever opened the sheet, except after a
+   trade: then nothing keeps it, so the presenter's next Space press plays
+   the clock instead of reopening the ticket. */
+function closeSheet(done){
   if(!sheetOpen) return;
   sheet.classList.remove("on"); scrim.classList.remove("on");
   sheetOpen = false; sheetTick = null; sheetKind = "";
-  lastFocus && lastFocus.focus && lastFocus.focus({preventScroll: true});
+  if(done){ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+  else lastFocus && lastFocus.focus && lastFocus.focus({preventScroll: true});
 }
 scrim.addEventListener("click", closeSheet);
 
@@ -1590,7 +1594,7 @@ function openTicket(id, dir, op){
     const res = SimEngine.act(E, {k: "order", m: id, dir: T.dir, op: T.op, type, qty: r.qty, px: lim});
     if(!res || !res.ok){ msg = res && res.msg || "That didn’t go through."; $("#tErr").textContent = msg; return; }
     const tx = res.tx, side = T.dir === "yes" ? "Yes" : "No";
-    closeSheet();
+    closeSheet(true);
     if(tx.qty) addFeed(feedTx(tx), false);
     if(type === "market" || tx.qty) toast(`${I.check}<span>${T.op === "buy" ? "Bought" : "Sold"} <b>${num(tx.qty)} ${side}</b> at ${ct1(tx.avg)}${tx.fee ? ` · fee ${usd2(tx.fee)}` : ""}${tx.restQ ? `. ${num(tx.restQ)} more resting at ${lim}¢` : ""}.</span>`);
     else toast(`${I.check}<span>Order placed: ${T.op} <b>${num(tx.restQ)} ${side}</b> at ${lim}¢. It rests in the book.</span>`);
