@@ -1,32 +1,123 @@
-# I, the Jury Live
+# I, the Jury
 
-A ten-minute simulation of I, the Jury, the prediction market for legal cases,
-for putting in front of investors. Six months of court decisions play out on a
-clock: filings, hearings, a live Supreme Court argument, a jury verdict, a
-settlement, a deadline that passes. The investor gets $1,000 in practice
-credits and trades against about 3,600 simulated traders, a number that
-passes 9,000 by June as distribution brings more in.
+Prediction markets on court cases. This repository holds two things, both
+static, with no build step and no backend:
 
-Everything is fictional: the cases, the parties, the judges, the companies and
-every number. The legal mechanics are real ones. No real judge or justice is
-named or quoted.
+| Where | What |
+| --- | --- |
+| `/` | **The platform.** A working demo of the exchange itself, laid out like Kalshi on a white theme: markets on rulings, verdicts and settlements, live prices, a trade ticket, a portfolio, a leaderboard and a social feed |
+| `/sim/` | **I, the Jury Live.** The ten-minute investor simulation: six months of court decisions on a clock, against thousands of simulated traders |
 
-It is a static site with no build step and no backend. Serve the folder (or
-deploy it to Vercel as it is) and open `index.html`.
+Serve the folder (or deploy it to Vercel as it is) and open it:
 
 ```
 python3 -m http.server 8000
 ```
 
+Then open `http://localhost:8000/` for the platform and
+`http://localhost:8000/sim/` for the simulation. Each links to the other.
+
+Everything is fictional: the cases, the parties, the judges, the companies,
+the outlets, the traders and every number. The legal mechanics are real
+ones. No real judge or justice is named or quoted.
+
+# The platform
+
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `index.html` | Page shell |
-| `scenario.js` | The story: five cases, eight markets, every event and when it happens, the forecasts, the named traders. Nothing else holds any story |
-| `engine.js` | The exchange and everyone trading on it: order books, thousands of simulated traders, resolution, the business numbers. No DOM, so it also runs in Node |
-| `sim.js` | The clock, the screens and the person playing |
-| `sim.css` | Every style: phone, tablet and laptop, light and dark |
+| `index.html` | Page shell. Also sends old simulation links (`/?jump=300`, `/#m=...`) on to `sim/` |
+| `app/data.js` | Every market, category, news item, trader and post. Nothing else holds any content |
+| `app/app.js` | The app: routes, pages, live prices, charts, carousels, the trade ticket, the account |
+| `app/app.css` | Every style, desktop to phone. White theme only |
+| `app/img/` | 53 photos, all public domain or CC0, cropped to 320px squares (about 1.2 MB in all). Credits in `app/img/CREDITS.md` |
+
+## Pages
+
+| Route | Page |
+| --- | --- |
+| `#/` | Home: category bar, topic chips, a featured carousel with live charts, trending and top movers, horizontal rails (Trending, Live now, Supreme Court, Closing soon, New), the simulation banner, a market grid, the leaderboard, breaking news and Ideas |
+| `#/m/<id>` | A market: chart (1D, 1W, 1M, All) with trades ticking past, outcomes, order book, rules, timeline, the case, live updates, news, posts, related markets, and the trade ticket |
+| `#/c/<category>` | A category: side navigation, filter chips, market list, and the trade ticket beside it |
+| `#/all`, `#/new` | Every market as a grid, filterable by category |
+| `#/live` | Trials and hearings happening now, with a live trade feed |
+| `#/ideas` | Posts from traders, with their positions |
+| `#/leaderboard` | Profit, volume and predictions; or the Activity feed |
+| `#/portfolio` | Your value, cash, positions (with Sell), history and watchlist |
+| `#/u/<name>` | A trader's profile |
+| `#/how` | How it works, and questions |
+
+On a phone the header folds into a search icon, a tab bar runs along the
+bottom, and Yes and No open the trade ticket as a sheet.
+
+## How the demo behaves
+
+- **Prices move.** Every second and a half a few markets take a small random
+  step, more often for trials in progress, and drift back toward where they
+  started. Numbers flash green or red as they change; charts redraw, and
+  trades float up the left edge of the market chart.
+- **Trading works.** Sign up (any email, or either button) for $1,000 in
+  practice credits. A buy walks a small order book, so a big order pays a
+  little more per contract, and takers pay a 1% fee, as in the simulation.
+  Positions are marked at the current chance. Sell from the ticket or the
+  portfolio. Deposit adds credits.
+- **It remembers you.** Your account, positions, history, watchlist, likes
+  and posts live in this browser's `localStorage` (`itj_app_v1`). The account
+  menu has Reset demo and Log out. Nothing is sent anywhere.
+- **Dates never go stale.** Close dates, listing dates, news and posts are
+  stored relative to the moment the page opens.
+
+Keyboard: `/` searches, arrow keys move through search results, Esc closes
+whatever is open.
+
+## Editing markets
+
+Everything is in `app/data.js`. A market has an `id`, a category (`cat`), a
+`title`, an image key (`img`, a file in `app/img/`), a volume, `close` (days
+from now, or `"fri"`), `listed` (days ago), `rules` (with `{close}` for the
+date), and one of:
+
+| `kind` | Holds |
+| --- | --- |
+| `binary` | `p`: the chance of Yes, in % |
+| `multi` | `outcomes: [{n, p}]`, with `exclusive: true` when exactly one can happen |
+| `vs` | `sides: [{n, code, color, p}]`: a case between two parties, shown as two buttons in their colours |
+
+Optional: `live` (a status line such as `"Day 9 · Jury deliberating"`),
+`updates` (`[[minutes ago, text]]`), `news`, `case` (`{name, court, docket}`),
+`about`, `repeat`, and `tags: ["trending" | "new"]`. The home carousel is
+`ITJ.hero`, a list of market ids.
+
+## Where the layout comes from
+
+The layout follows Kalshi's web app as published in 2025 and 2026 reviews and
+screenshots: the header with search and Log in / Sign up, the category bar
+and topic chips, the featured carousel with its chart and previous / next
+titles, the cards with Yes and No and "$100 → $238", two-team buttons for
+head-to-head events, the market page with the trade ticket on the right,
+rules and timeline, the order book, the leaderboard's three columns, and the
+breaking-news list. The brand, the words, the code and every image are this
+project's own; no Kalshi asset is used.
+
+# The simulation
+
+A ten-minute simulation of I, the Jury for putting in front of investors.
+Six months of court decisions play out on a clock: filings, hearings, a live
+Supreme Court argument, a jury verdict, a settlement, a deadline that passes.
+The investor gets $1,000 in practice credits and trades against about 3,600
+simulated traders, a number that passes 9,000 by June as distribution brings
+more in. It lives in `sim/`; open `/sim/`.
+
+## Files
+
+| File | What it is |
+| --- | --- |
+| `sim/index.html` | Page shell |
+| `sim/scenario.js` | The story: five cases, eight markets, every event and when it happens, the forecasts, the named traders. Nothing else holds any story |
+| `sim/engine.js` | The exchange and everyone trading on it: order books, thousands of simulated traders, resolution, the business numbers. No DOM, so it also runs in Node |
+| `sim/sim.js` | The clock, the screens and the person playing |
+| `sim/sim.css` | Every style: phone, tablet and laptop, light and dark |
 | `tools/check.js` | Runs the whole term headless and prints a report. Not shipped |
 
 ## What happens in ten minutes
@@ -139,7 +230,7 @@ carries on where it was, paused. Nothing is sent anywhere.
 
 ## Editing the story
 
-Everything is in `scenario.js`. An event has a date (`at: "Mar 16"` or
+Everything is in `sim/scenario.js`. An event has a date (`at: "Mar 16"` or
 `"Apr 20 10:00"`), the market it is about, a tag, a title and body, and
 optionally new `fair` values (with `over` to glide there instead of jumping),
 `hype`, a document to show (`doc`), `resolve: "yes" | "no"`, a market to `list`,

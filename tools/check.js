@@ -11,8 +11,8 @@
    ===================================================================== */
 
 const path = require("path");
-const SCENARIO = require(path.join(__dirname, "..", "scenario.js"));
-const SimEngine = require(path.join(__dirname, "..", "engine.js"));
+const SCENARIO = require(path.join(__dirname, "..", "sim", "scenario.js"));
+const SimEngine = require(path.join(__dirname, "..", "sim", "engine.js"));
 const quick = process.argv.includes("--quick");
 
 const $ = c => "$" + Math.round(c / 100).toLocaleString("en-US");
