@@ -78,6 +78,8 @@ svg{flex:none}
 .nav>button[aria-current="page"]{color:var(--ink)}
 .logo{font-family:var(--serif);font-weight:700;font-size:23px;letter-spacing:-.01em;line-height:1;white-space:nowrap}
 .logo b{color:var(--gold)}
+a.logo{color:inherit;text-decoration:none}
+a.logo:hover{opacity:.8}
 .logo.sm{font-size:14px}
 .live-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
 .live-tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--no);animation:pulse 1.6s ease-in-out infinite}
